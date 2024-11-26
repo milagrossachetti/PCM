@@ -5,6 +5,37 @@ let quantizedSignal = [];
 let binarySignal = [];
 let analogSignalFrequency = 0;
 
+document.getElementById('samplingRate').addEventListener('input', (event) => {
+    let value = parseFloat(event.target.value);
+    const errorMessageElement = document.getElementById('samplingRateError'); 
+
+    errorMessageElement.textContent = '';
+
+    const frequency = analogSignalFrequency; 
+    if (isNaN(value) || value < 2 * frequency) {
+        errorMessageElement.textContent = `La frecuencia de muestreo debe ser mayor o igual que el doble de la frecuencia de la señal (${(2 * frequency).toFixed(2)} Hz).`;
+        
+        document.getElementById('processPCM').disabled = true;
+    } else {
+        document.getElementById('processPCM').disabled = false;
+    }
+});
+
+document.getElementById('quantizationLevels').addEventListener('input', (event) => {
+    let value = parseInt(event.target.value);
+    const errorMessageElement = document.getElementById('quantizationLevelsError'); 
+
+    errorMessageElement.textContent = '';
+
+    if (isNaN(value) || value < 2 || (value & (value - 1)) !== 0) {
+        errorMessageElement.textContent = 'Por favor, ingrese un valor que sea una potencia de 2 (por ejemplo, 2, 4, 8, 16).';
+        
+        document.getElementById('processPCM').disabled = true;
+    } else {
+        document.getElementById('processPCM').disabled = false;
+    }
+});
+
 function generateRandomSignal() {
     const amplitude = Math.random() * 2; 
     const phase = Math.random() * 2 * Math.PI;
@@ -22,8 +53,6 @@ function generateRandomSignal() {
 
     plotSignal();
 }
-
-
 
 function plotSignal() {
     const data = [
@@ -89,12 +118,8 @@ function plotQuantizationLevels(quantizationLevels) {
 function processPCM() {
     const samplingRate = parseFloat(document.getElementById('samplingRate').value);
     const quantizationLevels = parseInt(document.getElementById('quantizationLevels').value);
+    
     const frequency = analogSignalFrequency; 
-
-    if (samplingRate < 2 * frequency) {
-        alert(`Error: La frecuencia de muestreo (${samplingRate} Hz) debe ser mayor o igual que el doble de la frecuencia de la señal (${(2 * frequency).toFixed(2)} Hz).`);
-        return;
-    }    
 
     // Muestreo
     const step = Math.floor(time.length / (time.length * samplingRate / 100));
@@ -127,7 +152,6 @@ function processPCM() {
     displayBinarySignal();
 }
 
-
 function displayBinarySignal() {
     const binaryContainer = document.getElementById('binaryOutput');
     binaryContainer.innerHTML = ''; // Limpiar contenido previo
@@ -149,8 +173,6 @@ function displayBinarySignal() {
     binaryContainer.appendChild(table);
 }
 
-
-// Actualizar gráficas en Plotly
 function updateGraph() {
     const sampledX = sampledSignal.map(([t]) => t);
     const sampledY = sampledSignal.map(([, value]) => value);

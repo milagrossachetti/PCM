@@ -49,6 +49,7 @@ input:hover {
 
 button {
     margin-left: 15px;
+    height: 58px;
     width: 22%;  
     margin-top: 23px;
     background-color: #4CAF50;
@@ -210,6 +211,7 @@ table tr {
     }
 }
 #signalInfo {
+    margin-left: 15px;
     margin-top: 10px;
     font-size: 16px;
     color: #333;
@@ -218,4 +220,9 @@ table tr {
 #signalFrequency {
     font-weight: bold;
     color: #007bff;
+}
+.error-message {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
 }
