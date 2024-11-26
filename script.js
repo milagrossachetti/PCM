@@ -74,47 +74,45 @@ function plotSignal() {
 
     const layout = {
         title: 'Señales PCM',
-        height: 900, // Ajusta la altura a lo que prefieras
-        xaxis: {
-            title: 'Tiempo (s)',
-            range: [-0.25, 2] // Mostrar solo de 0 a 2 en el eje X
-        },
+        height: 900,
+        xaxis: { title: 'Tiempo (s)', range: [-0.25, 1] },
         yaxis: { title: 'Amplitud' },
-        showlegend: true
+        showlegend: true,
+        dragmode: 'pan', // Permitir desplazamiento
+        autosize: true // Hacer que la gráfica se ajuste automáticamente
     };
+    
 
     Plotly.newPlot('plot', data, layout);
 }
 
 function plotQuantizationLevels(quantizationLevels) {
-    // Calcular los valores mínimos y máximos de la señal original
     const minVal = Math.min(...analogSignal);
     const maxVal = Math.max(...analogSignal);
-
-    // Calcular el tamaño del paso para cada nivel de cuantificación
     const stepSize = (maxVal - minVal) / quantizationLevels;
 
-    // Crear los niveles de cuantificación basados en el valor mínimo, máximo y los niveles de cuantificación
+    // Crear los niveles de cuantificación
     const levels = Array.from({ length: quantizationLevels }, (_, i) => minVal + i * stepSize);
     
-    // Número de bits para la representación binaria de los niveles
+    // Calcular el número de bits necesarios
     const bits = Math.ceil(Math.log2(quantizationLevels));
 
-    // Crear los trazos de los niveles de cuantificación
+    // Crear trazos de niveles con bits alineados
     const levelTraces = levels.map((level, index) => ({
-        x: [-0.25, time[time.length - 1]], // Usamos el rango completo de tiempo para los niveles
-        y: [level, level], // El nivel se dibuja horizontalmente en la gráfica
+        x: [time[0], time[time.length - 1]], // Rango completo en el eje X
+        y: [level, level], // Posición en el eje Y
         mode: 'lines+text',
-        line: { dash: 'dot', color: 'gray' }, // Línea discontinua gris para cada nivel
+        line: { dash: 'dot', color: 'gray', width: 1 }, // Línea discontinua
         name: `Nivel ${index}`,
-        text: [`${index.toString(2).padStart(bits, '0')}`], // Representación binaria del nivel
-        textposition: 'top right',
+        text: [`${index.toString(2).padStart(bits, '0')}`], // Bits representativos
+        textposition: 'middle left', // Alinear texto con la línea
         showlegend: false
     }));
 
-    // Agregar solo los trazos de los niveles de cuantificación al gráfico
+    // Agregar los trazos de los niveles de cuantificación al gráfico
     Plotly.addTraces('plot', levelTraces);
 }
+
 
 function processPCM() {
     const samplingRate = parseFloat(document.getElementById('samplingRate').value);
