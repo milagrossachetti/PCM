@@ -18,7 +18,7 @@ function generateRandomSignal() {
 
     const samplingRateInput = document.getElementById('samplingRate');
     const recommendedSamplingRate = analogSignalFrequency * 2;
-    samplingRateInput.value = recommendedSamplingRate.toFixed(2);
+    samplingRateInput.value = Math.ceil(recommendedSamplingRate);
 
     plotSignal();
 }
@@ -94,8 +94,7 @@ function processPCM() {
     if (samplingRate < 2 * frequency) {
         alert(`Error: La frecuencia de muestreo (${samplingRate} Hz) debe ser mayor o igual que el doble de la frecuencia de la señal (${(2 * frequency).toFixed(2)} Hz).`);
         return;
-    }
-    
+    }    
 
     // Muestreo
     const step = Math.floor(time.length / (time.length * samplingRate / 100));
