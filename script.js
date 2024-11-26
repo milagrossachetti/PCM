@@ -2,21 +2,29 @@ let analogSignal = [];
 let time = [];
 let sampledSignal = [];
 let quantizedSignal = [];
-let binarySignal = []; // Global para almacenar codificación binaria
+let binarySignal = [];
+let analogSignalFrequency = 0;
 
-// Generar señal senoidal aleatoria con amplitud y fase variables
 function generateRandomSignal() {
     const amplitude = Math.random() * 2; 
-    const phase = Math.random() * 2 * Math.PI; // Fase entre 0 y 2π
-    time = Array.from({ length: 1000 }, (_, i) => i / 100); // 10 segundos
+    const phase = Math.random() * 2 * Math.PI;
+    analogSignalFrequency = Math.random() * 10 + 1; 
+    time = Array.from({ length: 1000 }, (_, i) => i / 100);
 
-    // Señal senoidal con amplitud y fase variables
-    analogSignal = time.map(t => amplitude * Math.sin(2 * Math.PI * 1 * t + phase));
+    analogSignal = time.map(t => amplitude * Math.sin(2 * Math.PI * analogSignalFrequency * t + phase));
+
+    const frequencyElement = document.getElementById('signalFrequency');
+    frequencyElement.textContent = analogSignalFrequency.toFixed(2);
+
+    const samplingRateInput = document.getElementById('samplingRate');
+    const recommendedSamplingRate = analogSignalFrequency * 2;
+    samplingRateInput.value = recommendedSamplingRate.toFixed(2);
 
     plotSignal();
 }
 
-// Graficar señal en Plotly
+
+
 function plotSignal() {
     const data = [
         {
@@ -79,8 +87,15 @@ function plotQuantizationLevels(quantizationLevels) {
 }
 
 function processPCM() {
-    const samplingRate = parseInt(document.getElementById('samplingRate').value);
+    const samplingRate = parseFloat(document.getElementById('samplingRate').value);
     const quantizationLevels = parseInt(document.getElementById('quantizationLevels').value);
+    const frequency = analogSignalFrequency; 
+
+    if (samplingRate < 2 * frequency) {
+        alert(`Error: La frecuencia de muestreo (${samplingRate} Hz) debe ser mayor o igual que el doble de la frecuencia de la señal (${(2 * frequency).toFixed(2)} Hz).`);
+        return;
+    }
+    
 
     // Muestreo
     const step = Math.floor(time.length / (time.length * samplingRate / 100));
@@ -94,13 +109,8 @@ function processPCM() {
     const stepSize = (maxVal - minVal) / quantizationLevels;
 
     quantizedSignal = sampledSignal.map(([t, value]) => {
-        // Calcular el nivel inferior
         let level = Math.floor((value - minVal) / stepSize);
-
-        // Limitar el nivel a los valores válidos (0 a quantizationLevels - 1)
         level = Math.max(0, Math.min(level, quantizationLevels - 1));
-
-        // Calcular el valor cuantificado correspondiente
         const quantizedValue = level * stepSize + minVal;
         return [t, quantizedValue, level];
     });
@@ -108,7 +118,7 @@ function processPCM() {
     // Codificación binaria
     const bits = Math.ceil(Math.log2(quantizationLevels));
     binarySignal = quantizedSignal.map(([t, quantizedValue, level]) => {
-        const binary = level.toString(2).padStart(bits, '0'); // Nivel codificado en binario
+        const binary = level.toString(2).padStart(bits, '0');
         return { t, quantizedValue, binary };
     });
 
@@ -117,6 +127,7 @@ function processPCM() {
     plotQuantizationLevels(quantizationLevels);
     displayBinarySignal();
 }
+
 
 function displayBinarySignal() {
     const binaryContainer = document.getElementById('binaryOutput');

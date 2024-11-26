@@ -209,3 +209,13 @@ table tr {
         margin-top: 20px;
     }
 }
+#signalInfo {
+    margin-top: 10px;
+    font-size: 16px;
+    color: #333;
+}
+
+#signalFrequency {
+    font-weight: bold;
+    color: #007bff;
+}
