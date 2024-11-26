@@ -74,9 +74,10 @@ function plotSignal() {
 
     const layout = {
         title: 'Señales PCM',
+        height: 900, // Ajusta la altura a lo que prefieras
         xaxis: {
             title: 'Tiempo (s)',
-            range: [0, 2] // Mostrar solo de 0 a 2 en el eje X
+            range: [-0.25, 2] // Mostrar solo de 0 a 2 en el eje X
         },
         yaxis: { title: 'Amplitud' },
         showlegend: true
@@ -101,7 +102,7 @@ function plotQuantizationLevels(quantizationLevels) {
 
     // Crear los trazos de los niveles de cuantificación
     const levelTraces = levels.map((level, index) => ({
-        x: [time[0], time[time.length - 1]], // Usamos el rango completo de tiempo para los niveles
+        x: [-0.25, time[time.length - 1]], // Usamos el rango completo de tiempo para los niveles
         y: [level, level], // El nivel se dibuja horizontalmente en la gráfica
         mode: 'lines+text',
         line: { dash: 'dot', color: 'gray' }, // Línea discontinua gris para cada nivel
@@ -118,7 +119,6 @@ function plotQuantizationLevels(quantizationLevels) {
 function processPCM() {
     const samplingRate = parseFloat(document.getElementById('samplingRate').value);
     const quantizationLevels = parseInt(document.getElementById('quantizationLevels').value);
-    
     const frequency = analogSignalFrequency; 
 
     // Muestreo

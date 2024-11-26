@@ -79,11 +79,11 @@ button:active {
 #plot {
     margin: 15px;
     flex: 3;
-    height: 100%;
     background-color: #f0f0f0;
     border: 1px solid #ddd;
     border-radius: 8px;
 }
+
 
 .binaryOutput {
     flex: 1;
