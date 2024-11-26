@@ -13,7 +13,7 @@ document.getElementById('samplingRate').addEventListener('input', (event) => {
 
     const frequency = analogSignalFrequency; 
     if (isNaN(value) || value < 2 * frequency) {
-        errorMessageElement.textContent = `La frecuencia de muestreo debe ser mayor o igual que el doble de la frecuencia de la señal (${(2 * frequency).toFixed(2)} Hz).`;
+        errorMessageElement.textContent = `La frecuencia de muestreo debe ser mayor o igual que el doble de la frecuencia de la señal (${(2 * frequency)} Hz).`;
         
         document.getElementById('processPCM').disabled = true;
     } else {
@@ -39,17 +39,17 @@ document.getElementById('quantizationLevels').addEventListener('input', (event) 
 function generateRandomSignal() {
     const amplitude = Math.random() * 2; 
     const phase = Math.random() * 2 * Math.PI;
-    analogSignalFrequency = Math.random() * 10 + 1; 
+    analogSignalFrequency = Math.round(Math.random() * 10 + 1); 
     time = Array.from({ length: 1000 }, (_, i) => i / 100);
 
     analogSignal = time.map(t => amplitude * Math.sin(2 * Math.PI * analogSignalFrequency * t + phase));
 
     const frequencyElement = document.getElementById('signalFrequency');
-    frequencyElement.textContent = analogSignalFrequency.toFixed(2);
+    frequencyElement.textContent = analogSignalFrequency;
 
     const samplingRateInput = document.getElementById('samplingRate');
     const recommendedSamplingRate = analogSignalFrequency * 2;
-    samplingRateInput.value = Math.ceil(recommendedSamplingRate);
+    samplingRateInput.value = recommendedSamplingRate;
 
     plotSignal();
 }
