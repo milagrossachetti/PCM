@@ -75,7 +75,7 @@ function plotSignal() {
     const layout = {
         title: 'Señales PCM',
         height: 900,
-        xaxis: { title: 'Tiempo (s)', range: [-0.25, 1] },
+        xaxis: { title: 'Tiempo (s)', range: [-0.1, 1] },
         yaxis: { title: 'Amplitud' },
         showlegend: true,
         dragmode: 'pan', // Permitir desplazamiento
