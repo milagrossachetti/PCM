@@ -10,7 +10,11 @@ document.getElementById('samplingRate').addEventListener('input', (event) => {
     const errorMessageElement = document.getElementById('samplingRateError'); 
 
     errorMessageElement.textContent = '';
-
+    if (value > 10000) {
+        errorMessageElement.textContent = `La frecuencia de muestreo no debe exceder 10000 Hz.`;
+        document.getElementById('processPCM').disabled = true;
+        return;
+    }
     const frequency = analogSignalFrequency; 
     if (isNaN(value) || value < 2 * frequency) {
         errorMessageElement.textContent = `La frecuencia de muestreo debe ser mayor o igual que el doble de la frecuencia de la señal (${(2 * frequency)} Hz).`;
@@ -40,7 +44,7 @@ function generateRandomSignal() {
     const amplitude = Math.random() * 2; 
     const phase = Math.random() * 2 * Math.PI;
     analogSignalFrequency = Math.round(Math.random() * 10 + 1); 
-    time = Array.from({ length: 1000 }, (_, i) => i / 100);
+    time = Array.from({ length: 10000 }, (_, i) => i / 10000); // 10,000 puntos para 10 segundos
 
     analogSignal = time.map(t => amplitude * Math.sin(2 * Math.PI * analogSignalFrequency * t + phase));
 
@@ -130,7 +134,7 @@ function processPCM() {
     // Generar la señal muestreada
     sampledSignal = [];
     for (let t = 0; t <= maxTime; t += samplingInterval) {
-        const closestIndex = Math.round(t / (time[1] - time[0])); // Índice más cercano en el array `time`
+        const closestIndex = Math.round(t / (time[1] - time[0]));
         if (closestIndex < analogSignal.length) {
             sampledSignal.push([t, analogSignal[closestIndex]]);
         }
