@@ -5,6 +5,12 @@ body {
     background-color: #ffffff;
 }
 
+#container{
+    margin: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px; 
+    box-shadow: 2px 2px 10px rgba(187, 187, 187, 0.5);}
+
 h1 {
     margin-left: 15px;
     font-size: 24px;
