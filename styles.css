@@ -48,6 +48,8 @@ input:hover {
 }
 
 button {
+    font-family: Arial, sans-serif;
+
     margin-left: 15px;
     height: 58px;
     width: 22%;  
