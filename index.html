@@ -14,7 +14,7 @@
             <label for="samplingRate">Frecuencia de Muestreo (Hz):</label>
             <input type="text" id="samplingRate" value="10" min="1">
             <div id="samplingRateError" class="error-message"></div>
-        </div>
+        </div>     
         <div id="container-quantizationLevels" class="container-input">
             <label for="quantizationLevels">Niveles de Cuantificación (M):</label>
             <input type="text" id="quantizationLevels" value="8" min="2">
@@ -23,9 +23,14 @@
         <button id="processPCM">Procesar PCM</button>
         <button id="generateSignal">Generar Señal Aleatoria</button>
     </div>
-    <div id="signalInfo">
-        <p><strong>Frecuencia de la señal generada:</strong> <span id="signalFrequency">N/A</span> Hz</p>
-    </div>
+    <div id="info">
+        <div id="signalInfo">
+            <p><strong>Frecuencia de la señal generada:</strong> <span id="signalFrequency">N/A</span> Hz</p>
+        </div>
+        <div id="processingMessage" style="display: none;"> <!---->
+            <strong>Procesando, por favor espere...</strong>
+        </div> 
+    </div>  
     <div id="body-container">
         <div id="plot">
         </div>

@@ -10,8 +10,8 @@ document.getElementById('samplingRate').addEventListener('input', (event) => {
     const errorMessageElement = document.getElementById('samplingRateError'); 
 
     errorMessageElement.textContent = '';
-    if (value > 10000) {
-        errorMessageElement.textContent = `La frecuencia de muestreo no debe exceder 10000 Hz.`;
+    if (value > 1000) {
+        errorMessageElement.textContent = `La frecuencia de muestreo no debe exceder 1000 Hz.`;
         document.getElementById('processPCM').disabled = true;
         return;
     }
@@ -44,10 +44,10 @@ function generateRandomSignal() {
     const amplitude = Math.random() * 2; 
     const phase = Math.random() * 2 * Math.PI;
     analogSignalFrequency = Math.round(Math.random() * 10 + 1); 
-    time = Array.from({ length: 10000 }, (_, i) => i / 1000); // 10,000 puntos para 10 segundos
+    time = [];
 
-    analogSignal = time.map(t => amplitude * Math.sin(2 * Math.PI * analogSignalFrequency * t + phase));
-
+    const numPoints = 10000; // Número de puntos de la señal
+    const chunkSize = 1000; // Tamaño del fragmento a procesar a la vez
     const frequencyElement = document.getElementById('signalFrequency');
     frequencyElement.textContent = analogSignalFrequency;
 
@@ -55,7 +55,20 @@ function generateRandomSignal() {
     const recommendedSamplingRate = analogSignalFrequency * 2;
     samplingRateInput.value = recommendedSamplingRate;
 
-    plotSignal();
+    function generateChunk(startIndex) {
+        let endIndex = Math.min(startIndex + chunkSize, numPoints);
+        for (let i = startIndex; i < endIndex; i++) {
+            time.push(i / 1000);
+            analogSignal.push(amplitude * Math.sin(2 * Math.PI * analogSignalFrequency * (i / 1000) + phase));
+        }
+        if (endIndex < numPoints) {
+            requestAnimationFrame(() => generateChunk(endIndex)); // Llamada asíncrona para el siguiente fragmento
+        } else {
+            plotSignal(); // Una vez terminada la generación, dibujar la señal
+        }
+    }
+
+    generateChunk(0); // Iniciar la generación en fragmentos
 }
 
 function plotSignal() {
@@ -124,66 +137,73 @@ function plotQuantizationLevels(quantizationLevels) {
 
 
 function processPCM() {
-    const samplingRate = parseFloat(document.getElementById('samplingRate').value);
-    const quantizationLevels = parseInt(document.getElementById('quantizationLevels').value);
+    const processingMessageElement = document.getElementById('processingMessage');
+    processingMessageElement.style.display = 'block';
 
-    if (isNaN(samplingRate) || samplingRate <= 0 || isNaN(quantizationLevels) || quantizationLevels <= 0) {
-        console.error('Parámetros inválidos');
-        return;
-    }
+    setTimeout(() => {
+        // Parámetros
+        const samplingRate = parseFloat(document.getElementById('samplingRate').value);
+        const quantizationLevels = parseInt(document.getElementById('quantizationLevels').value);
 
-    // Calcular el intervalo de muestreo en términos de tiempo
-    const samplingInterval = 1 / samplingRate; // Tiempo entre muestras en segundos
-    const maxTime = time[time.length - 1]; // Tiempo máximo de la señal
-
-    // Generar la señal muestreada
-    sampledSignal = [];
-    for (let t = 0; t <= maxTime; t += samplingInterval) {
-        const closestIndex = Math.round(t / (time[1] - time[0]));
-        if (closestIndex < analogSignal.length) {
-            sampledSignal.push([t, analogSignal[closestIndex]]);
+        if (isNaN(samplingRate) || samplingRate <= 0 || isNaN(quantizationLevels) || quantizationLevels <= 0) {
+            console.error('Parámetros inválidos');
+            processingMessageElement.style.display = 'none';  // Ocultar mensaje en caso de error
+            return;
         }
-    }
 
-    // Cuantificación
-    const minVal = Math.min(...analogSignal);
-    const maxVal = Math.max(...analogSignal);
-    const stepSize = (maxVal - minVal) / quantizationLevels;
+        // Calcular el intervalo de muestreo
+        const samplingInterval = 1 / samplingRate;
+        const maxTime = time[time.length - 1];
 
-    quantizedSignal = sampledSignal.map(([t, value]) => {
-        let level = Math.floor((value - minVal) / stepSize);
-        level = Math.max(0, Math.min(level, quantizationLevels - 1));
-        const quantizedValue = level * stepSize + minVal;
-        return [t, quantizedValue, level];
-    });
+        // Generar la señal muestreada
+        sampledSignal = [];
+        for (let t = 0; t <= maxTime; t += samplingInterval) {
+            const closestIndex = Math.round(t / (time[1] - time[0]));
+            if (closestIndex < analogSignal.length) {
+                sampledSignal.push([t, analogSignal[closestIndex]]);
+            }
+        }
 
-    // Codificación binaria
-    const bits = Math.ceil(Math.log2(quantizationLevels));
-    binarySignal = quantizedSignal.map(([t, quantizedValue, level]) => {
-        const binary = level.toString(2).padStart(bits, '0');
-        return { t, quantizedValue, binary };
-    });
+        // Cuantificación
+        const minVal = Math.min(...analogSignal);
+        const maxVal = Math.max(...analogSignal);
+        const stepSize = (maxVal - minVal) / quantizationLevels;
 
-    // Actualizar gráficas y mostrar tabla
-    updateGraph();
-    plotQuantizationLevels(quantizationLevels);
-    displayBinarySignal();
+        quantizedSignal = sampledSignal.map(([t, value]) => {
+            let level = Math.floor((value - minVal) / stepSize);
+            level = Math.max(0, Math.min(level, quantizationLevels - 1));
+            const quantizedValue = level * stepSize + minVal;
+            return [t, quantizedValue, level];
+        });
+
+        // Codificación binaria
+        const bits = Math.ceil(Math.log2(quantizationLevels));
+        binarySignal = quantizedSignal.map(([t, quantizedValue, level]) => {
+            const binary = level.toString(2).padStart(bits, '0');
+            return { t, quantizedValue, binary };
+        });
+
+        updateGraph();
+        plotQuantizationLevels(quantizationLevels);
+        displayBinarySignal();
+
+        processingMessageElement.style.display = 'none';
+    }, 0);  
 }
+
 
 
 function displayBinarySignal() {
     const binaryContainer = document.getElementById('binaryOutput');
-    binaryContainer.innerHTML = ''; // Limpiar contenido previo
+    binaryContainer.innerHTML = ''; 
 
-    // Crear tabla
     const table = document.createElement('table');
     table.border = '1';
     const headerRow = document.createElement('tr');
     headerRow.innerHTML = '<th>N° muestra</th><th>Codificación Binaria</th>';
     table.appendChild(headerRow);
 
-    // Mostrar los 20 primeros valores binarios
-    binarySignal.slice(0, 10).forEach(({ binary }, index) => {
+    binarySignal.slice(0, 500).forEach(({ binary }, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `<td>${index + 1}</td><td>${binary}</td>`;
         table.appendChild(row);
@@ -196,11 +216,32 @@ function updateGraph() {
     const sampledX = sampledSignal.map(([t]) => t);
     const sampledY = sampledSignal.map(([, value]) => value);
 
-    Plotly.update('plot', {
-        x: [time, sampledX],
-        y: [analogSignal, sampledY]
+    Plotly.react('plot', [{
+        x: time,
+        y: analogSignal,
+        name: 'Señal Analógica',
+        mode: 'lines',
+        line: { color: 'blue' }
+    }, {
+        x: sampledX,
+        y: sampledY,
+        name: 'Muestras',
+        mode: 'markers',
+        marker: { color: 'red' }
+    }], {
+        title: 'Señales PCM',
+        height: 900,
+        xaxis: {
+            title: 'Tiempo (s)',
+            range: [-0.25, 1]
+        },
+        yaxis: { title: 'Amplitud' },
+        showlegend: true,
+        dragmode: 'pan',
+        autosize: true
     });
 }
+
 
 // Eventos
 document.getElementById('generateSignal').addEventListener('click', generateRandomSignal);
