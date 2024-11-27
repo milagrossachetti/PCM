@@ -44,8 +44,7 @@ function generateRandomSignal() {
     const amplitude = Math.random() * 2; 
     const phase = Math.random() * 2 * Math.PI;
     analogSignalFrequency = Math.round(Math.random() * 10 + 1); 
-    time = Array.from({ length: 10000 }, (_, i) => i / 10000); // 10,000 puntos para 10 segundos
-    time = Array.from({ length: 10000 }, (_, i) => i / 1000); // 10,000 puntos para 10 segundos
+    time = Array.from({ length: 25000 }, (_, i) => i / 1000); 
 
     analogSignal = time.map(t => amplitude * Math.sin(2 * Math.PI * analogSignalFrequency * t + phase));
 
@@ -107,20 +106,35 @@ function plotQuantizationLevels(quantizationLevels) {
     // Calcular el número de bits necesarios
     const bits = Math.ceil(Math.log2(quantizationLevels));
 
-    // Crear trazos de niveles con bits alineados
-    const levelTraces = levels.map((level, index) => ({
-        x: [time[0], time[time.length - 1]], // Rango completo en el eje X
-        y: [level, level], // Posición en el eje Y
-        mode: 'lines+text',
-        line: { dash: 'dot', color: 'gray', width: 1 }, // Línea discontinua
-        name: `Nivel ${index}`,
-        text: [`${index.toString(2).padStart(bits, '0')}`], // Bits representativos
-        textposition: 'middle left', // Alinear texto con la línea
-        showlegend: false
-    }));
+    // Generar un único trazo para todas las líneas de cuantificación
+    const quantizationTrace = {
+        x: [],
+        y: [],
+        mode: 'lines+text', // Líneas con texto
+        line: { dash: 'dot', color: 'gray', width: 1 }, // Estilo de línea
+        text: [], // Valores binarios
+        textposition: 'middle left', // Posición del texto
+        name: 'Muestras', // Nombre para controlar todas las líneas
+        showlegend: true
+    };
 
-    // Agregar los trazos de los niveles de cuantificación al gráfico
-    Plotly.addTraces('plot', levelTraces);
+    // Generar niveles de cuantificación y agregar coordenadas al trazo principal
+    levels.forEach((level, index) => {
+        // Coordenadas para este nivel
+        quantizationTrace.x.push(time[0], time[time.length - 1], null); // `null` separa líneas
+        quantizationTrace.y.push(level, level, null); // `null` separa líneas
+        
+        // Agregar el valor binario al centro de la línea
+        quantizationTrace.text.push(
+            `${index.toString(2).padStart(bits, '0')}`, // Valor binario
+            '',
+            '' // `null` también separa texto entre segmentos
+        );
+    });
+
+    // Agregar el trazo de cuantificación al gráfico
+    Plotly.addTraces('plot', [quantizationTrace]);
+
 }
 
 
@@ -191,7 +205,7 @@ function displayBinarySignal() {
     headerRow.innerHTML = '<th>N° muestra</th><th>Codificación Binaria</th>';
     table.appendChild(headerRow);
 
-    binarySignal.slice(0, 500).forEach(({ binary }, index) => {
+    binarySignal.slice(0, 5000).forEach(({ binary }, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `<td>${index + 1}</td><td>${binary}</td>`;
         table.appendChild(row);
