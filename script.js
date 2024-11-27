@@ -114,7 +114,7 @@ function plotQuantizationLevels(quantizationLevels) {
         line: { dash: 'dot', color: 'gray', width: 1 }, // Estilo de línea
         text: [], // Valores binarios
         textposition: 'middle left', // Posición del texto
-        name: 'Niveles M', // Nombre para controlar todas las líneas
+        name: 'Muestras', // Nombre para controlar todas las líneas
         showlegend: true
     };
 
