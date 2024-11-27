@@ -44,7 +44,7 @@ function generateRandomSignal() {
     const amplitude = Math.random() * 2; 
     const phase = Math.random() * 2 * Math.PI;
     analogSignalFrequency = Math.round(Math.random() * 10 + 1); 
-    time = Array.from({ length: 10000 }, (_, i) => i / 10000); // 10,000 puntos para 10 segundos
+    time = Array.from({ length: 10000 }, (_, i) => i / 1000); // 10,000 puntos para 10 segundos
 
     analogSignal = time.map(t => amplitude * Math.sin(2 * Math.PI * analogSignalFrequency * t + phase));
 
@@ -76,19 +76,24 @@ function plotSignal() {
         }
     ];
 
+    // Aquí se ajusta el rango del eje X según el tiempo total de la señal
     const layout = {
         title: 'Señales PCM',
         height: 900,
-        xaxis: { title: 'Tiempo (s)', range: [-0.1, 1] },
+        xaxis: { 
+            title: 'Tiempo (s)', 
+            range: [-0.25, 1] // Ajustar el rango para cubrir todo el tiempo generado
+        },
         yaxis: { title: 'Amplitud' },
         showlegend: true,
         dragmode: 'pan', // Permitir desplazamiento
         autosize: true // Hacer que la gráfica se ajuste automáticamente
     };
-    
 
+    // Crear la gráfica
     Plotly.newPlot('plot', data, layout);
 }
+
 
 function plotQuantizationLevels(quantizationLevels) {
     const minVal = Math.min(...analogSignal);
