@@ -117,13 +117,24 @@ function plotQuantizationLevels(quantizationLevels) {
 function processPCM() {
     const samplingRate = parseFloat(document.getElementById('samplingRate').value);
     const quantizationLevels = parseInt(document.getElementById('quantizationLevels').value);
-    const frequency = analogSignalFrequency; 
 
-    // Muestreo
-    const step = Math.floor(time.length / (time.length * samplingRate / 100));
-    sampledSignal = time
-        .filter((_, i) => i % step === 0)
-        .map((t, i) => [t, analogSignal[i * step]]);
+    if (isNaN(samplingRate) || samplingRate <= 0 || isNaN(quantizationLevels) || quantizationLevels <= 0) {
+        console.error('Parámetros inválidos');
+        return;
+    }
+
+    // Calcular el intervalo de muestreo en términos de tiempo
+    const samplingInterval = 1 / samplingRate; // Tiempo entre muestras en segundos
+    const maxTime = time[time.length - 1]; // Tiempo máximo de la señal
+
+    // Generar la señal muestreada
+    sampledSignal = [];
+    for (let t = 0; t <= maxTime; t += samplingInterval) {
+        const closestIndex = Math.round(t / (time[1] - time[0])); // Índice más cercano en el array `time`
+        if (closestIndex < analogSignal.length) {
+            sampledSignal.push([t, analogSignal[closestIndex]]);
+        }
+    }
 
     // Cuantificación
     const minVal = Math.min(...analogSignal);
@@ -149,6 +160,7 @@ function processPCM() {
     plotQuantizationLevels(quantizationLevels);
     displayBinarySignal();
 }
+
 
 function displayBinarySignal() {
     const binaryContainer = document.getElementById('binaryOutput');
