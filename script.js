@@ -44,10 +44,11 @@ function generateRandomSignal() {
     const amplitude = Math.random() * 2; 
     const phase = Math.random() * 2 * Math.PI;
     analogSignalFrequency = Math.round(Math.random() * 10 + 1); 
-    time = [];
+    time = Array.from({ length: 10000 }, (_, i) => i / 10000); // 10,000 puntos para 10 segundos
+    time = Array.from({ length: 10000 }, (_, i) => i / 1000); // 10,000 puntos para 10 segundos
 
-    const numPoints = 10000; // Número de puntos de la señal
-    const chunkSize = 1000; // Tamaño del fragmento a procesar a la vez
+    analogSignal = time.map(t => amplitude * Math.sin(2 * Math.PI * analogSignalFrequency * t + phase));
+
     const frequencyElement = document.getElementById('signalFrequency');
     frequencyElement.textContent = analogSignalFrequency;
 
@@ -55,20 +56,7 @@ function generateRandomSignal() {
     const recommendedSamplingRate = analogSignalFrequency * 2;
     samplingRateInput.value = recommendedSamplingRate;
 
-    function generateChunk(startIndex) {
-        let endIndex = Math.min(startIndex + chunkSize, numPoints);
-        for (let i = startIndex; i < endIndex; i++) {
-            time.push(i / 1000);
-            analogSignal.push(amplitude * Math.sin(2 * Math.PI * analogSignalFrequency * (i / 1000) + phase));
-        }
-        if (endIndex < numPoints) {
-            requestAnimationFrame(() => generateChunk(endIndex)); // Llamada asíncrona para el siguiente fragmento
-        } else {
-            plotSignal(); // Una vez terminada la generación, dibujar la señal
-        }
-    }
-
-    generateChunk(0); // Iniciar la generación en fragmentos
+    plotSignal();
 }
 
 function plotSignal() {
